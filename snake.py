@@ -48,27 +48,35 @@ class Snake(object):
                             i.get_position()[1] * GRID_SIZE, GRID_SIZE,
                             GRID_SIZE))
 
+
+
+
+    # Moves all the tail parts. Then checks if food is eating.
+    # In that case spawn a new tail on the latest tail/head position
+    # Then move the head
     def move(self, food):
-        #If there is food spawn new Tail
+        
+        # Loop through tails array backwards
+        for i in reversed(range(0, len(self.tails))):
+            if i == 0: #Move the tail closest to head
+                self.tails[i].move(self.get_position())
+
+            else:      # Move the other tails
+                self.tails[i].move(self.tails[i-1].get_position())
+
         if self.get_position() == food.get_position():
-            if not self.tails:
-                self.tails.append(
-                    Tail(self.get_position(), self.get_direction(), self))
+            self.tails.append(Tail(self.position))  # Create a new tail
+            food.randomize_position()               # Change food position
+        # Moving the head
+        self.position[0] += self.direction[0]   # X
+        self.position[1] += self.direction[1]   # Y
+        
+        
 
-        for tail in self.tails:
-            tail.move()
-            if self.get_position() == tail.get_position():
-                self.reset()
-            else:
-                next = len(self.tails) - 1
-                self.tails.append(
-                    Tail(self.tails[next].get_position(),
-                         self.tails[next].get_direction(), self.tails[next]))
+            
 
-            food.randomize_position()
 
-        self.position[0] += self.direction[0]
-        self.position[1] += self.direction[1]
+
 
     def handle_keys(self):
         for event in pygame.event.get():
@@ -85,16 +93,11 @@ class Snake(object):
 
 class Tail(object):
 
-    def __init__(self, position, direction, next):
+    def __init__(self, position):
         self.position = position
-        self.direction = direction
-        self.next = next
 
-    def move(self):
-        self.position[0] += self.direction[0]
-        self.position[1] += self.direction[1]
-
-        self.direction = self.next.get_direction()
+    def move(self, position):
+        self.position = position
 
     def get_direction(self):
         return self.direction
